@@ -18,4 +18,7 @@ public class Shit implements Serializable {
     public Shit(String name) {
         this.name = name;
     }
+
+    public Shit() {
+    }
 }
