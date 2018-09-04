@@ -1,6 +1,7 @@
 package com.justyna.project.model.graph;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.geotools.referencing.GeodeticCalculator;
 import org.neo4j.ogm.annotation.GeneratedValue;
 import org.neo4j.ogm.annotation.Id;
@@ -11,7 +12,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NodeEntity
 public class Airport {
 
@@ -37,21 +39,23 @@ public class Airport {
 
 
     @Relationship(type = "FLIGHT_TO")
-    public List<Flight> connections;
+    private List<Flight> connections;
 
-    public void connectsWith(Airport airport) {
+    public Flight connectsWith(Airport airport) {
         if (connections == null) {
             connections = new ArrayList<>();
         }
         Flight flight = new Flight(this, airport, this.getDistanceInKilometers(airport.getPosition()));
         connections.add(flight);
+
+        return flight;
     }
 
-    public Point2D getPosition() {
+    private Point2D getPosition() {
         return new Point2D.Double(latitude, longitude);
     }
 
-    public double getDistanceInKilometers(Point2D destPoint) {
+    private double getDistanceInKilometers(Point2D destPoint) {
         GeodeticCalculator calculator = new GeodeticCalculator();
         calculator.setStartingGeographicPoint(this.getPosition());
         calculator.setDestinationGeographicPoint(destPoint);

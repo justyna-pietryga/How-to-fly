@@ -1,20 +1,25 @@
 package com.justyna.project.model.graph;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.neo4j.ogm.annotation.*;
 
+@Getter
+@Setter
 @RelationshipEntity(type = "FLIGHT_TO")
 public class Flight {
     @Id
     @GeneratedValue
     private Long id;
 
-    public double distance;
+    private Long code;
+    private double distance;
 
     @StartNode
-    public Airport departureAirport;
+    private Airport departureAirport;
 
     @EndNode
-    public Airport arrivalAirport;
+    private Airport arrivalAirport;
 
     public Flight() {
     }

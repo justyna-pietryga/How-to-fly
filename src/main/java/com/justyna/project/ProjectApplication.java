@@ -1,19 +1,23 @@
 package com.justyna.project;
 
-import com.justyna.project.model.graph.Airport;
-import com.justyna.project.model.relational.Shit;
-import com.justyna.project.repositories.graph.AirportRepository;
-import com.justyna.project.repositories.graph.FlightRepository;
-import com.justyna.project.repositories.relational.ShitRepository;
-import org.neo4j.driver.internal.InternalPath;
+import com.justyna.project.model.relational.Airport;
+import com.justyna.project.model.relational.City;
+import com.justyna.project.model.relational.Flight;
+import com.justyna.project.repositories.graph.AirportGraphRepository;
+import com.justyna.project.repositories.graph.FlightGraphRepository;
+import com.justyna.project.repositories.relational.AirportRelRepository;
+import com.justyna.project.repositories.relational.CityRelRepository;
+import com.justyna.project.repositories.relational.FlightRelRepository;
+import com.justyna.project.services.general.FlightsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @SpringBootApplication
 public class ProjectApplication {
@@ -23,43 +27,69 @@ public class ProjectApplication {
     }
 
     @Bean
-    CommandLineRunner demo(ShitRepository shitRepository, AirportRepository airportRepository, FlightRepository flightRepository) {
+    CommandLineRunner demo(AirportGraphRepository airportRepository,
+                           FlightGraphRepository flightGraphRepository, FlightRelRepository flightRelRepository,
+                           AirportRelRepository airportRelRepository,
+                           CityRelRepository cityRepository, FlightsService flightsServices
+    ) {
         return args -> {
-
-            shitRepository.deleteAll();
-            shitRepository.save(new Shit("On the top of the world"));
             airportRepository.deleteAll();
+            flightGraphRepository.deleteAll();
+            Map<String, City> cityMap = new HashMap<>();
+            cityMap.put("Cracow", new City("Cracow"));
+            cityMap.put("Chicago", new City("Chicago"));
+            cityMap.put("LondonCanada", new City("LondonCanada"));
+            cityMap.put("Barcelona", new City("Barcelona"));
+            cityMap.put("Moscow", new City("Moscow"));
+            cityMap.put("London", new City("London"));
 
-            Airport londonCanada = new Airport("London Airport", "YXU", 43.035599, -81.1539);
-            Airport london = new Airport("London Luton Airport", "LTN", 51.874698638916016, -0.36833301186561584);
-            Airport cracow = new Airport("Balice", "KRK", 50.077701568603516, 19.784799575805664);
-            Airport barcelona = new Airport("Barcelona International Airport", "BCN", 41.297100067139, 2.0784599781036);
-            Airport moscow = new Airport("Vnukovo International Airport", "VKO", 55.5914993286, 37.2615013123);
-            Airport chicago = new Airport("Chicago Midway International Airport", "MDW", 41.7859992980957, -87.75240325927734);
+            cityMap.forEach((s, city) -> cityRepository.save(city));
 
-            List<Airport> airports = Arrays.asList(london, londonCanada, cracow, barcelona, moscow, chicago);
+            com.justyna.project.model.relational.Airport cracowAirport =
+                    new com.justyna.project.model.relational.Airport("KRK", "Balice",
+                            50.077701568603516, 19.784799575805664, cityMap.get("Cracow"), "UTC+2");
 
-            cracow.connectsWith(chicago);
-            barcelona.connectsWith(london);
-            londonCanada.connectsWith(chicago);
-            london.connectsWith(moscow);
-            barcelona.connectsWith(chicago);
-            london.connectsWith(barcelona);
-            cracow.connectsWith(london);
-            moscow.connectsWith(chicago);
-            chicago.connectsWith(londonCanada);
 
-            airportRepository.saveAll(airports);
+            com.justyna.project.model.relational.Airport chicagoAirport =
+                    new com.justyna.project.model.relational.Airport("MDW", "Chicago Midway International Airport",
+                            41.7859992980957, -87.75240325927734, cityMap.get("Chicago"), "UTC-5");
 
-            Iterable<Map<String, InternalPath>> results =
-                    flightRepository.findTheShortest(london.getCode(), londonCanada.getCode());
+            com.justyna.project.model.relational.Airport londonAirport =
+                    new com.justyna.project.model.relational.Airport("LTN", "London Luton Airport",
+                            51.874698638916016, -0.36833301186561584, cityMap.get("London"), "UTC");
 
-            for (Map<String, InternalPath> row : results) {
-                    row.get("p").forEach(r ->
-                        System.out.println(r.start().get("code") + "->" + r.end().get("code") + r.relationship().id()));
-                    System.out.println("_________________");
+            com.justyna.project.model.relational.Airport barcelonaAirport =
+                    new com.justyna.project.model.relational.Airport("BCN", "Barcelona International Airport",
+                            41.297100067139, 2.0784599781036, cityMap.get("Barcelona"), "UTC+1");
 
-            }
+            com.justyna.project.model.relational.Airport moscowAirport =
+                    new com.justyna.project.model.relational.Airport("VKO", "Vnukovo International Airport",
+                            55.5914993286, 37.2615013123, cityMap.get("Moscow"), "UTC+3");
+
+            com.justyna.project.model.relational.Airport londonCanadaAirport =
+                    new com.justyna.project.model.relational.Airport("YXU", "London Airport",
+                            43.035599, -81.1539, cityMap.get("London"), "UTC-4");
+
+            Set<Flight> flights = new HashSet<>();
+            flights.add(new Flight(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            flights.add(new Flight(barcelonaAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+//            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            flights.add(new Flight(londonAirport, moscowAirport, "2018-09-02T09:00", "2018-09-02T16:40"));
+            flights.add(new Flight(barcelonaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            flights.add(new Flight(londonAirport, barcelonaAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            flights.add(new Flight(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            flights.add(new Flight(moscowAirport, chicagoAirport, "2018-09-02T17:10", "2018-09-02T18:10"));
+            flights.add(new Flight(chicagoAirport, londonCanadaAirport, "2018-09-02T18:40", "2018-09-02T20:40"));
+
+            Set<Airport> airports = new HashSet<>();
+            airports.add(cracowAirport);
+            airports.add(chicagoAirport);
+            airports.add(moscowAirport);
+            airports.add(londonAirport);
+            airports.add(londonCanadaAirport);
+            airports.add(barcelonaAirport);
+
+            flightsServices.translateAirports(airports, flights);
 
         };
     }

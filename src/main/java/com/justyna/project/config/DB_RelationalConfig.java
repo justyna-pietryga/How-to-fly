@@ -15,11 +15,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages  = "com.justyna.project.repositories.relational", entityManagerFactoryRef = "relationalDBFactory", transactionManagerRef = "relationalDBTransactionManager")
+@EnableJpaRepositories(basePackages = "com.justyna.project.repositories.relational",
+        entityManagerFactoryRef = "relationalDBFactory",
+        transactionManagerRef = "relationalDBTransactionManager")
 public class DB_RelationalConfig {
 
     @Primary
@@ -37,7 +41,9 @@ public class DB_RelationalConfig {
 
     @Bean
     public LocalContainerEntityManagerFactoryBean relationalDBFactory(@Qualifier("userDS") DataSource userDS, EntityManagerFactoryBuilder builder) {
-        return builder.dataSource(userDS).packages("com.justyna.project.model.relational").build();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "create-drop");
+        return builder.dataSource(userDS).packages("com.justyna.project.model.relational").properties(properties).build();
     }
 
     @Primary

@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Map;
 
-public interface FlightRepository extends Neo4jRepository<Flight, Long> {
+public interface FlightGraphRepository extends Neo4jRepository<Flight, Long> {
     @Query("MATCH p=(departure:Airport {code: {airportDepartureCode}})-[flights:FLIGHT_TO*]->" +
             "(arrival:Airport {code: {airportArrivalCode}}) WITH p, " +
             "reduce(dist=0, flight IN flights | dist+flight.distance) AS how_long RETURN p, how_long ORDER BY how_long ASC")
