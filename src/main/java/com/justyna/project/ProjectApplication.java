@@ -2,12 +2,10 @@ package com.justyna.project;
 
 import com.justyna.project.model.relational.Airport;
 import com.justyna.project.model.relational.City;
-import com.justyna.project.model.relational.Flight;
+import com.justyna.project.model.relational.FlightLeg;
 import com.justyna.project.repositories.graph.AirportGraphRepository;
 import com.justyna.project.repositories.graph.FlightGraphRepository;
-import com.justyna.project.repositories.relational.AirportRelRepository;
 import com.justyna.project.repositories.relational.CityRelRepository;
-import com.justyna.project.repositories.relational.FlightRelRepository;
 import com.justyna.project.services.general.FlightsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +17,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static com.justyna.project.model.other.TimeMode.LOCAL;
+import static com.justyna.project.model.other.TimeMode.UTC;
+
 @SpringBootApplication
 public class ProjectApplication {
 
@@ -28,8 +29,7 @@ public class ProjectApplication {
 
     @Bean
     CommandLineRunner demo(AirportGraphRepository airportRepository,
-                           FlightGraphRepository flightGraphRepository, FlightRelRepository flightRelRepository,
-                           AirportRelRepository airportRelRepository,
+                           FlightGraphRepository flightGraphRepository,
                            CityRelRepository cityRepository, FlightsService flightsServices
     ) {
         return args -> {
@@ -70,16 +70,18 @@ public class ProjectApplication {
                     new com.justyna.project.model.relational.Airport("YXU", "London Airport",
                             43.035599, -81.1539, cityMap.get("London"), "UTC-4");
 
-            Set<Flight> flights = new HashSet<>();
-            flights.add(new Flight(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new Flight(barcelonaAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+            Set<FlightLeg> flights = new HashSet<>();
+
+            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
+            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC));
 //            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new Flight(londonAirport, moscowAirport, "2018-09-02T09:00", "2018-09-02T16:40"));
-            flights.add(new Flight(barcelonaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new Flight(londonAirport, barcelonaAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new Flight(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new Flight(moscowAirport, chicagoAirport, "2018-09-02T17:10", "2018-09-02T18:10"));
-            flights.add(new Flight(chicagoAirport, londonCanadaAirport, "2018-09-02T18:40", "2018-09-02T20:40"));
+            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC));
+            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC));
+            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC));
+            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
+            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC));
 
             Set<Airport> airports = new HashSet<>();
             airports.add(cracowAirport);
@@ -90,7 +92,19 @@ public class ProjectApplication {
             airports.add(barcelonaAirport);
 
             flightsServices.translateAirports(airports, flights);
+            System.out.println(flightsServices.sortByTimeOfFlight(londonAirport, londonCanadaAirport));
 
         };
     }
 }
+
+
+//flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
+//        flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T07:10", "2018-09-02T08:30", UTC));
+////            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+//        flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T09:00", "2018-09-02T16:40", LOCAL));
+//        flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T23:30", UTC));
+//        flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T05:20", "2018-09-02T06:30", UTC));
+//        flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
+//        flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T14:10", "2018-09-02T23:10", UTC));
+//        flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:40", "2018-09-02T00:40", UTC));

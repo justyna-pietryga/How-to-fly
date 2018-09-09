@@ -27,7 +27,7 @@ public class Airport {
     private String timeZone;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
-    private List<Flight> flight;
+    private List<FlightLeg> flight;
 
     public Airport(String code) {
         this.code = code;
@@ -48,8 +48,7 @@ public class Airport {
     @Override
     public String toString() {
         return "Airport{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                ", name='" + code + '\'' +
                 '}';
     }
 }
