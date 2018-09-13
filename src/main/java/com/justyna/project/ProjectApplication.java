@@ -2,11 +2,13 @@ package com.justyna.project;
 
 import com.justyna.project.model.relational.Airport;
 import com.justyna.project.model.relational.City;
+import com.justyna.project.model.relational.Country;
 import com.justyna.project.model.relational.FlightLeg;
 import com.justyna.project.repositories.graph.AirportGraphRepository;
 import com.justyna.project.repositories.graph.FlightGraphRepository;
 import com.justyna.project.repositories.relational.CityRelRepository;
-import com.justyna.project.services.general.FlightsService;
+import com.justyna.project.repositories.relational.CountryRelRepository;
+import com.justyna.project.services.FlightsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,18 +32,27 @@ public class ProjectApplication {
     @Bean
     CommandLineRunner demo(AirportGraphRepository airportRepository,
                            FlightGraphRepository flightGraphRepository,
-                           CityRelRepository cityRepository, FlightsService flightsServices
+                           CityRelRepository cityRepository, FlightsService flightsServices, CountryRelRepository countryRelRepository
     ) {
         return args -> {
             airportRepository.deleteAll();
             flightGraphRepository.deleteAll();
             Map<String, City> cityMap = new HashMap<>();
-            cityMap.put("Cracow", new City("Cracow"));
-            cityMap.put("Chicago", new City("Chicago"));
-            cityMap.put("LondonCanada", new City("LondonCanada"));
-            cityMap.put("Barcelona", new City("Barcelona"));
-            cityMap.put("Moscow", new City("Moscow"));
-            cityMap.put("London", new City("London"));
+            Map<String, Country> countryMap = new HashMap<>();
+            countryMap.put("Poland", new Country("Poland"));
+            countryMap.put("USA", new Country("USA"));
+            countryMap.put("Canada", new Country("Canada"));
+            countryMap.put("Spain", new Country("Spain"));
+            countryMap.put("Russia", new Country("Russia"));
+            countryMap.put("UK", new Country("UK"));
+            countryMap.forEach((s, country) -> countryRelRepository.save(country));
+
+            cityMap.put("Cracow", new City("Cracow", countryMap.get("Poland")));
+            cityMap.put("Chicago", new City("Chicago", countryMap.get("USA")));
+            cityMap.put("LondonCanada", new City("LondonCanada", countryMap.get("Canada")));
+            cityMap.put("Barcelona", new City("Barcelona", countryMap.get("Spain")));
+            cityMap.put("Moscow", new City("Moscow", countryMap.get("Russia")));
+            cityMap.put("London", new City("London", countryMap.get("UK")));
 
             cityMap.forEach((s, city) -> cityRepository.save(city));
 
@@ -68,7 +79,7 @@ public class ProjectApplication {
 
             com.justyna.project.model.relational.Airport londonCanadaAirport =
                     new com.justyna.project.model.relational.Airport("YXU", "London Airport",
-                            43.035599, -81.1539, cityMap.get("London"), "UTC-4");
+                            43.035599, -81.1539, cityMap.get("LondonCanada"), "UTC-4");
 
             Set<FlightLeg> flights = new HashSet<>();
 
@@ -92,7 +103,7 @@ public class ProjectApplication {
             airports.add(barcelonaAirport);
 
             flightsServices.translateAirports(airports, flights);
-            System.out.println(flightsServices.sortByTimeOfFlight(londonAirport, londonCanadaAirport));
+            System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
 
         };
     }

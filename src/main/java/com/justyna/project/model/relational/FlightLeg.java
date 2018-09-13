@@ -24,6 +24,10 @@ public class FlightLeg {
     public FlightLeg() {
     }
 
+    public FlightLeg(Long id) {
+        this.id = id;
+    }
+
     @ManyToOne
     @JoinColumn(name = "departure_airport_id")
     private Airport departureAirport;
@@ -44,6 +48,13 @@ public class FlightLeg {
     @JoinColumn(name = "flight_leg")
     private Flight flight;
 
+    public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
+        this.id = id;
+        this.departureAirport = departureAirport;
+        this.arrivalAirport = arrivalAirport;
+        setDepartureTime(departureTime, timeMode);
+        setArrivalTime(arrivalTime, timeMode);
+    }
 
     public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
         this.departureAirport = departureAirport;
@@ -52,11 +63,11 @@ public class FlightLeg {
         setArrivalTime(arrivalTime, timeMode);
     }
 
-    private void setDepartureTime(String localeTime, TimeMode timeMode) {
+    public void setDepartureTime(String localeTime, TimeMode timeMode) {
         parseTime(localeTime, timeMode, departureAirport.getTimeZone(), Stage.DEPARTURE);
     }
 
-    private void setArrivalTime(String localeTime, TimeMode timeMode) {
+    public void setArrivalTime(String localeTime, TimeMode timeMode) {
         parseTime(localeTime, timeMode, arrivalAirport.getTimeZone(), Stage.ARRIVAL);
     }
 
