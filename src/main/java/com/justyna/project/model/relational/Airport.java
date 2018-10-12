@@ -1,5 +1,8 @@
 package com.justyna.project.model.relational;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,8 +29,10 @@ public class Airport {
 
     private String timeZone;
 
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
-    private List<FlightLeg> flight;
+    private List<FlightLeg> flightLeg;
 
     public Airport(String code) {
         this.code = code;

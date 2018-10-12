@@ -46,6 +46,7 @@ public class FlightLegController {
         if (airportRelRepository.findById(departure.getId()).isPresent()) flightLeg.setArrivalAirport(arrival);
         flightLeg.setDepartureTime(flightLegDto.getDepartureTime(), flightLegDto.getTimeMode());
         flightLeg.setArrivalTime(flightLegDto.getArrivalTime(), flightLegDto.getTimeMode());
+        flightLeg.setAirplane(flightLegDto.getAirplane());
 
         return new ResponseEntity<>(flightLegRelRepository.save(flightLeg), HttpStatus.OK);
     }
@@ -79,6 +80,10 @@ public class FlightLegController {
         }
         if (flightLegDto.getArrivalAirport() != null) {
             flightLeg.setArrivalTime(flightLegDto.getArrivalTime(), flightLegDto.getTimeMode());
+        }
+
+        if (flightLegDto.getAirplane() != null) {
+            flightLeg.setAirplane(flightLegDto.getAirplane());
         }
 
         return new ResponseEntity<>(flightLegRelRepository.save(flightLeg), HttpStatus.OK);
