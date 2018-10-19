@@ -25,11 +25,13 @@ public class FlightLegController {
         this.airportRelRepository = airportRelRepository;
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<FlightLeg> getAllFlightLegs() {
         return flightLegRelRepository.findAll();
     }
 
+    @CrossOrigin
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity<FlightLeg> getFlightLegById(@PathVariable Long id) {
         Optional<FlightLeg> flightLeg = flightLegRelRepository.findById(id);
@@ -37,6 +39,7 @@ public class FlightLegController {
                 () -> new ResponseEntity<>((FlightLeg) null, HttpStatus.BAD_REQUEST));
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<FlightLeg> addFlightLeg(@RequestBody FlightLegDto flightLegDto) {
         FlightLeg flightLeg = new FlightLeg();
@@ -51,6 +54,7 @@ public class FlightLegController {
         return new ResponseEntity<>(flightLegRelRepository.save(flightLeg), HttpStatus.OK);
     }
 
+    @CrossOrigin
     @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<FlightLeg> updateFlightLeg(@RequestBody FlightLegDto flightLegDto, @PathVariable Long id) {
 
