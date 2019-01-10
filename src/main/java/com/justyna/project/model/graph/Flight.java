@@ -12,6 +12,8 @@ public class Flight {
     @GeneratedValue
     private Long id;
 
+    private long departDate;
+    private long arrivalDate;
     private Long code;
     private double distance;
 
@@ -28,5 +30,12 @@ public class Flight {
         this.distance = distance;
         this.departureAirport = departureAirport;
         this.arrivalAirport = arrivalAirport;
+    }
+
+    public Flight(Airport departureAirport, Airport arrivalAirport, double distance, long departDate) {
+        this.distance = distance;
+        this.departureAirport = departureAirport;
+        this.arrivalAirport = arrivalAirport;
+        this.departDate = departDate;
     }
 }
