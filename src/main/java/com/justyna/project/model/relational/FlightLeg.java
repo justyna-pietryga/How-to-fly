@@ -1,5 +1,6 @@
 package com.justyna.project.model.relational;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.justyna.project.model.other.TimeMode;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.justyna.project.model.other.TimeMode.LOCAL;
 
@@ -44,21 +47,34 @@ public class FlightLeg {
     @Setter(AccessLevel.PRIVATE)
     private String arrivalTimeLocale;
 
-    @ManyToOne
-    @JoinColumn(name = "flight_leg")
-    private Flight flight;
+    //    @ManyToOne
+//    @JoinColumn(name = "flight_id")
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "flight_flightLeg", joinColumns = {@JoinColumn(name = "flightLeg_id")},
+            inverseJoinColumns = {@JoinColumn(name = "flight_id")})
+    @JsonIgnore
+    private List<Flight> flights = new ArrayList<>();
 
-    public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
+    private List<Reservation> flightLegDetails;
+
+    @ManyToOne
+    @JoinColumn(name = "airplane_id")
+    private Airplane airplane;
+
+    public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
         this.id = id;
         this.departureAirport = departureAirport;
         this.arrivalAirport = arrivalAirport;
+        this.airplane = airplane;
         setDepartureTime(departureTime, timeMode);
         setArrivalTime(arrivalTime, timeMode);
     }
 
-    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
+    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
         this.departureAirport = departureAirport;
         this.arrivalAirport = arrivalAirport;
+        this.airplane = airplane;
         setDepartureTime(departureTime, timeMode);
         setArrivalTime(arrivalTime, timeMode);
     }

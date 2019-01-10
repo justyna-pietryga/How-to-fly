@@ -1,23 +1,20 @@
 package com.justyna.project;
 
-import com.justyna.project.model.relational.Airport;
-import com.justyna.project.model.relational.City;
-import com.justyna.project.model.relational.Country;
-import com.justyna.project.model.relational.FlightLeg;
+import com.justyna.project.model.other.CabinClass;
+import com.justyna.project.model.relational.*;
 import com.justyna.project.repositories.graph.AirportGraphRepository;
 import com.justyna.project.repositories.graph.FlightGraphRepository;
+import com.justyna.project.repositories.relational.AirplaneRepository;
 import com.justyna.project.repositories.relational.CityRelRepository;
 import com.justyna.project.repositories.relational.CountryRelRepository;
+import com.justyna.project.repositories.relational.PlaceRepository;
 import com.justyna.project.services.FlightsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.justyna.project.model.other.TimeMode.LOCAL;
 import static com.justyna.project.model.other.TimeMode.UTC;
@@ -32,11 +29,33 @@ public class ProjectApplication {
     @Bean
     CommandLineRunner demo(AirportGraphRepository airportRepository,
                            FlightGraphRepository flightGraphRepository,
+                           PlaceRepository placeRepository,
+                           AirplaneRepository airplaneRepository,
                            CityRelRepository cityRepository, FlightsService flightsServices, CountryRelRepository countryRelRepository
     ) {
         return args -> {
             airportRepository.deleteAll();
             flightGraphRepository.deleteAll();
+
+            List<Airplane> airplanes = new ArrayList<>();
+            for (int i = 0; i < 9; i++) {
+                airplanes.add(new Airplane("GA", 100));
+            }
+            airplaneRepository.saveAll(airplanes);
+
+            for (Airplane airplane : airplanes) {
+                List<Place> placeList = new ArrayList<>();
+                for (int i = 0; i < airplane.getCapacity(); i++) {
+                    Place place = new Place(airplane.getCode() + i);
+                    if (i < airplane.getCapacity() * 0.20) place.setCabinClass(CabinClass.A);
+                    else place.setCabinClass(CabinClass.B);
+                    place.setAirplane(airplane);
+                    placeList.add(place);
+                }
+                placeRepository.saveAll(placeList);
+            }
+
+
             Map<String, City> cityMap = new HashMap<>();
             Map<String, Country> countryMap = new HashMap<>();
             countryMap.put("Poland", new Country("Poland"));
@@ -83,16 +102,16 @@ public class ProjectApplication {
 
             Set<FlightLeg> flights = new HashSet<>();
 
-            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
-            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC));
+            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(0)));
+            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC, airplanes.get(1)));
 //            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC));
-            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC));
-            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC));
-            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
-            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC));
-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC));
-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC));
+            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC, airplanes.get(2)));
+            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC, airplanes.get(3)));
+            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC, airplanes.get(4)));
+            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(5)));
+            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC, airplanes.get(6)));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC, airplanes.get(7)));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC, airplanes.get(8)));
 
             Set<Airport> airports = new HashSet<>();
             airports.add(cracowAirport);
@@ -102,8 +121,11 @@ public class ProjectApplication {
             airports.add(londonCanadaAirport);
             airports.add(barcelonaAirport);
 
+
             flightsServices.translateAirports(airports, flights);
-            System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
+            System.out.println("Wait for it...");
+            System.out.println("Compilation is done");
+            // System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
 
         };
     }

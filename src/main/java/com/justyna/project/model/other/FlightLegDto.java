@@ -1,5 +1,6 @@
 package com.justyna.project.model.other;
 
+import com.justyna.project.model.relational.Airplane;
 import com.justyna.project.model.relational.Airport;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class FlightLegDto {
     private String departureTime;
     private String arrivalTime;
     private String timeMode;
+    private Airplane airplane;
 
 
     public TimeMode getTimeMode() {

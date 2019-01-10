@@ -32,10 +32,8 @@ public class DB_GraphConfig {
     public org.neo4j.ogm.config.Configuration configuration() {
         System.out.println("weszlo to dziadostwo");
         return new org.neo4j.ogm.config.Configuration.Builder()
-                .uri("bolt://localhost")
+                .uri("bolt://localhost:7687")
                 .credentials("neo4j", "secret")
-//                .encryptionLevel("REQUIRED")
-                //.uri("file:///var/tmp/neo4j.db")
                 .build();
     }
 
