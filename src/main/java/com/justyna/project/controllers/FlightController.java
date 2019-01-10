@@ -1,5 +1,7 @@
 package com.justyna.project.controllers;
 
+import com.justyna.project.Exceptions.WrongTimeModeException;
+import com.justyna.project.model.other.TimeMode;
 import com.justyna.project.model.relational.Airport;
 import com.justyna.project.model.relational.City;
 import com.justyna.project.model.relational.Flight;
@@ -72,6 +74,38 @@ public class FlightController {
             flightLegRelRepository.saveAll(flightLegs);
 
             return new ResponseEntity<>(flights, HttpStatus.OK);
+        }
+        return new ResponseEntity<>((List<Flight>) null, HttpStatus.BAD_REQUEST);
+    }
+
+    @CrossOrigin
+    @RequestMapping(path = "/search3/departureId={departureCitytId},arrivalId={arrivalCityId}", method = RequestMethod.GET)
+    public ResponseEntity<List<Flight>> search3(@PathVariable Long departureCitytId, @PathVariable Long arrivalCityId,
+                                                @RequestParam String departDate, @RequestParam String arrivalDate, @RequestParam String timeMode)
+            throws WrongTimeModeException, IllegalArgumentException {
+        Optional<City> departure = cityRelRepository.findById(departureCitytId);
+        Optional<City> arrival = cityRelRepository.findById(arrivalCityId);
+        if (departure.isPresent() && arrival.isPresent()) {
+            try {
+                TimeMode timeMode1 = TimeMode.convert(timeMode);
+
+                List<Flight> flights = flightsService.getOptimalFlightsByCitiesAndDates(departure.get(), arrival.get(), departDate, arrivalDate, timeMode1);
+                flightRepository.saveAll(flights);
+                Set<FlightLeg> flightLegs = new HashSet<>();
+
+                flights.forEach((flight -> {
+                    for (FlightLeg flightLeg : flight.getFlightLegs()) {
+                        flightLeg.getFlights().add(flight);
+                        flightLegs.add(flightLeg);
+                    }
+                }));
+
+                flightLegRelRepository.saveAll(flightLegs);
+
+                return new ResponseEntity<>(flights, HttpStatus.OK);
+            } catch (WrongTimeModeException e) {
+                e.printStackTrace();
+            }
         }
         return new ResponseEntity<>((List<Flight>) null, HttpStatus.BAD_REQUEST);
     }
