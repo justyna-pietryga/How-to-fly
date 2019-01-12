@@ -125,7 +125,7 @@ public class FlightsService {
                                                    String departDate, String arrivalDate, TimeMode timeMode) {
         List<Flight> flights = new ArrayList<>();
 
-        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm'Z'");
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm");
         DateTime depart, arrival;
         if (timeMode.equals(UTC)) {
             depart = new DateTime(new Timestamp(format.parseDateTime(departDate).getMillis()));
@@ -133,13 +133,13 @@ public class FlightsService {
         } else {
             ZonedDateTime departZonedDateTime, arrivalZonedDateTime;
             String departTimeUTC, arrivalTimeUTC;
-            departZonedDateTime = LocalDateTime.parse(departDate.substring(0, departDate.length() - 1)).atZone(ZoneId.of(departAirport.getTimeZone()));
+            departZonedDateTime = LocalDateTime.parse(departDate).atZone(ZoneId.of(departAirport.getTimeZone()));
             departTimeUTC = departZonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toString();
-            arrivalZonedDateTime = LocalDateTime.parse(arrivalDate.substring(0, arrivalDate.length() - 1)).atZone(ZoneId.of(arrivalAirport.getTimeZone()));
+            arrivalZonedDateTime = LocalDateTime.parse(arrivalDate).atZone(ZoneId.of(arrivalAirport.getTimeZone()));
             arrivalTimeUTC = arrivalZonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toString();
 
-            depart = new DateTime(new Timestamp(format.parseDateTime(departTimeUTC).getMillis()));
-            arrival = new DateTime(new Timestamp(format.parseDateTime(arrivalTimeUTC).getMillis()));
+            depart = new DateTime(new Timestamp(format.parseDateTime(departTimeUTC.substring(0, departDate.length() - 1)).getMillis()));
+            arrival = new DateTime(new Timestamp(format.parseDateTime(arrivalTimeUTC.substring(0, departDate.length() - 1)).getMillis()));
         }
 
         logger.info("depart " + depart);
