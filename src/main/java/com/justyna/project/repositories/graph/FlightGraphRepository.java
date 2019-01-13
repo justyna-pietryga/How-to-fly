@@ -14,4 +14,13 @@ public interface FlightGraphRepository extends Neo4jRepository<Flight, Long> {
             "reduce(dist=0, flight IN flights | dist+flight.distance) AS how_long RETURN p, how_long ORDER BY how_long ASC")
     Iterable<Map<String, InternalPath>> findTheShortest(@Param("airportDepartureCode") String airportDepartureCode,
                                                         @Param("airportArrivalCode") String airportArrivalCode);
+
+    @Query("MATCH p=(departure:Airport {code: {airportDepartureCode}})-[flights:FLIGHT_TO*]->" +
+            "(arrival:Airport {code: {airportArrivalCode}}) " +
+            "WHERE ALL(x IN flights WHERE x.departDate >= {departDate} AND x.arrivalDate <= {arrivalDate}) WITH p, " +
+            "reduce(dist=0, flight IN flights | dist+flight.distance) AS how_long RETURN DISTINCT p, how_long ORDER BY how_long ASC")
+    Iterable<Map<String, InternalPath>> findTheShortestWithDatesRange(@Param("airportDepartureCode") String airportDepartureCode,
+                                                                      @Param("airportArrivalCode") String airportArrivalCode,
+                                                                      @Param("departDate") long departDate, @Param("arrivalDate") long arrivalDate);
+
 }

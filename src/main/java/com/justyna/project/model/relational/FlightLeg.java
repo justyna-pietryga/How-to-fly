@@ -5,8 +5,12 @@ import com.justyna.project.model.other.TimeMode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -46,6 +50,10 @@ public class FlightLeg {
     private String departureTimeLocale;
     @Setter(AccessLevel.PRIVATE)
     private String arrivalTimeLocale;
+    @Setter
+    private Timestamp deptTimeDate;
+    @Setter
+    private Timestamp arrivalTimeDate;
 
     //    @ManyToOne
 //    @JoinColumn(name = "flight_id")
@@ -71,12 +79,15 @@ public class FlightLeg {
         setArrivalTime(arrivalTime, timeMode);
     }
 
-    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
+    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) throws ParseException {
         this.departureAirport = departureAirport;
         this.arrivalAirport = arrivalAirport;
         this.airplane = airplane;
         setDepartureTime(departureTime, timeMode);
         setArrivalTime(arrivalTime, timeMode);
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm");
+        this.deptTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(departureTime, timeMode, departureAirport.getTimeZone())).getMillis());
+        this.arrivalTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(arrivalTime, timeMode, departureAirport.getTimeZone())).getMillis());
     }
 
     public void setDepartureTime(String localeTime, TimeMode timeMode) {
@@ -107,6 +118,17 @@ public class FlightLeg {
             setArrivalTimeLocale(timeLocale);
             setArrivalTimeUTC(timeUTC);
         }
+    }
+
+    private String convertTimeFormatter(String time, TimeMode timeMode, String zone) {
+        ZonedDateTime zonedDateTime;
+        String timeUTC;
+        if (timeMode == LOCAL) {
+            zonedDateTime = LocalDateTime.parse(time).atZone(ZoneId.of(zone));
+            timeUTC = zonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toString();
+        } else return time;
+
+        return timeUTC.substring(0, timeUTC.length() - 1);
     }
 
     @Override

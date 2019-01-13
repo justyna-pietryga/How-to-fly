@@ -125,6 +125,9 @@ public class ProjectApplication {
             flightsServices.translateAirports(airports, flights);
             System.out.println("Wait for it...");
             System.out.println("Compilation is done");
+//            flightsServices.getOptimalFlightsByCitiesAndDates(londonAirport, londonCanadaAirport, "2018-09-02T08:00Z", "2018-09-02T23:30Z", UTC);
+//            flightsServices.getOptimalFlightsByCitiesAndDates(cracowAirport, chicagoAirport, "2018-09-02T22:00Z", "2018-09-02T22:00Z", LOCAL);
+//            System.out.println("result " + flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
             // System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
 
         };
