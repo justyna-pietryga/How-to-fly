@@ -10,6 +10,7 @@ import com.justyna.project.repositories.relational.PlaceRepository;
 import com.justyna.project.repositories.relational.ReservationRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class ReservationController {
     }
 
     @CrossOrigin
+    @PreAuthorize("hasRole('USER')")
     @RequestMapping(value = "/{flightLegId}", method = RequestMethod.POST)
     public ResponseEntity<Iterable<Reservation>> addReservation(@PathVariable Long flightLegId, @RequestBody List<PassengerDetail> passengerDetails) {
         List<Reservation> flightLegDetailsList = new ArrayList<>();
