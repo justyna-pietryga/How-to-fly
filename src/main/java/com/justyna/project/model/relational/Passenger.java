@@ -34,9 +34,19 @@ public class Passenger {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Reservation> flightLegDetails;
+    private List<Reservation> reservations;
 
-//    @ManyToOne
+    @Override
+    public String toString() {
+        return "Passenger{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", pnr=" + pnr +
+                ", reservations=" + reservations +
+                '}';
+    }
+
+    //    @ManyToOne
 //    @JoinColumn(name = "place_id")
 //    private Place place;
 }

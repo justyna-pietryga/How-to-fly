@@ -1,0 +1,1028 @@
+Index: src/main/java/com/justyna/project/model/other/FlightLegDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/model/other/FlightLegDto.java	(revision )
++++ src/main/java/com/justyna/project/model/other/FlightLegDto.java	(revision )
+@@ -1,6 +1,5 @@
+ package com.justyna.project.model.other;
+ 
+-import com.justyna.project.model.relational.Airplane;
+ import com.justyna.project.model.relational.Airport;
+ import lombok.Data;
+ 
+@@ -14,7 +13,6 @@
+     private String departureTime;
+     private String arrivalTime;
+     private String timeMode;
+-    private Airplane airplane;
+ 
+ 
+     public TimeMode getTimeMode() {
+Index: src/main/java/com/justyna/project/model/other/PassengerDetail.java
+===================================================================
+--- src/main/java/com/justyna/project/model/other/PassengerDetail.java	(revision )
++++ src/main/java/com/justyna/project/model/other/PassengerDetail.java	(revision )
+@@ -1,10 +0,0 @@
+-package com.justyna.project.model.other;
+-
+-import com.justyna.project.model.relational.Passenger;
+-import lombok.Getter;
+-
+-@Getter
+-public class PassengerDetail {
+-    private Passenger passenger;
+-    private long placeId;
+-}
+Index: src/main/java/com/justyna/project/model/other/Gender.java
+===================================================================
+--- src/main/java/com/justyna/project/model/other/Gender.java	(revision )
++++ src/main/java/com/justyna/project/model/other/Gender.java	(revision )
+@@ -1,4 +0,0 @@
+-package com.justyna.project.model.other;
+-
+-public enum Gender {
+-}
+Index: src/main/java/com/justyna/project/model/other/CabinClass.java
+===================================================================
+--- src/main/java/com/justyna/project/model/other/CabinClass.java	(revision )
++++ src/main/java/com/justyna/project/model/other/CabinClass.java	(revision )
+@@ -1,5 +0,0 @@
+-package com.justyna.project.model.other;
+-
+-public enum CabinClass {
+-    A, B
+-}
+Index: src/main/java/com/justyna/project/model/relational/Flight.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Flight.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Flight.java	(revision )
+@@ -1,8 +1,5 @@
+ package com.justyna.project.model.relational;
+ 
+-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+-import com.fasterxml.jackson.annotation.JsonIdentityReference;
+-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+ import lombok.Getter;
+ import lombok.Setter;
+ 
+@@ -21,15 +18,9 @@
+     public Flight() {
+     }
+ 
+-    //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "flight", cascade = CascadeType.ALL)
+-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "flights")
++    @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
+     private List<FlightLeg> flightLegs = new ArrayList<>();
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "flight", cascade = CascadeType.ALL)
+-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+-    @JsonIdentityReference(alwaysAsId = true)
+-    private List<Pnr> pnrs = new ArrayList<>();
+-
+     @Override
+     public String toString() {
+         return "Flight{" +
+Index: src/main/java/com/justyna/project/model/relational/Airport.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Airport.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Airport.java	(revision )
+@@ -1,8 +1,5 @@
+ package com.justyna.project.model.relational;
+ 
+-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+-import com.fasterxml.jackson.annotation.JsonIdentityReference;
+-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+ import lombok.Getter;
+ import lombok.Setter;
+ 
+@@ -29,10 +26,8 @@
+ 
+     private String timeZone;
+ 
+-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+-    @JsonIdentityReference(alwaysAsId = true)
+     @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
+-    private List<FlightLeg> flightLeg;
++    private List<FlightLeg> flight;
+ 
+     public Airport(String code) {
+         this.code = code;
+Index: src/main/java/com/justyna/project/model/relational/FlightLeg.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/FlightLeg.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/FlightLeg.java	(revision )
+@@ -1,6 +1,5 @@
+ package com.justyna.project.model.relational;
+ 
+-import com.fasterxml.jackson.annotation.JsonIgnore;
+ import com.justyna.project.model.other.TimeMode;
+ import lombok.AccessLevel;
+ import lombok.Getter;
+@@ -11,8 +10,6 @@
+ import java.time.ZoneId;
+ import java.time.ZoneOffset;
+ import java.time.ZonedDateTime;
+-import java.util.ArrayList;
+-import java.util.List;
+ 
+ import static com.justyna.project.model.other.TimeMode.LOCAL;
+ 
+@@ -47,34 +44,21 @@
+     @Setter(AccessLevel.PRIVATE)
+     private String arrivalTimeLocale;
+ 
+-    //    @ManyToOne
+-//    @JoinColumn(name = "flight_id")
+-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+-    @JoinTable(name = "flight_flightLeg", joinColumns = {@JoinColumn(name = "flightLeg_id")},
+-            inverseJoinColumns = {@JoinColumn(name = "flight_id")})
+-    @JsonIgnore
+-    private List<Flight> flights = new ArrayList<>();
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
+-    private List<Reservation> flightLegDetails;
+-
+     @ManyToOne
+-    @JoinColumn(name = "airplane_id")
+-    private Airplane airplane;
++    @JoinColumn(name = "flight_leg")
++    private Flight flight;
+ 
+-    public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
++    public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
+         this.id = id;
+         this.departureAirport = departureAirport;
+         this.arrivalAirport = arrivalAirport;
+-        this.airplane = airplane;
+         setDepartureTime(departureTime, timeMode);
+         setArrivalTime(arrivalTime, timeMode);
+     }
+ 
+-    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
++    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode) {
+         this.departureAirport = departureAirport;
+         this.arrivalAirport = arrivalAirport;
+-        this.airplane = airplane;
+         setDepartureTime(departureTime, timeMode);
+         setArrivalTime(arrivalTime, timeMode);
+     }
+Index: src/main/java/com/justyna/project/model/relational/Pnr.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Pnr.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Pnr.java	(revision )
+@@ -1,34 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.*;
+-import java.util.List;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Pnr {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Pnr() {
+-    }
+-
+-    public Pnr(Long id) {
+-        this.id = id;
+-    }
+-
+-    private String code;
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
+-    private List<Passenger> passengers;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "flight_id")
+-    private Flight flight;
+-
+-    //ToDo pnr i pasenger code, generated chars
+-}
+Index: src/main/java/com/justyna/project/model/relational/Reservation.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Reservation.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Reservation.java	(revision )
+@@ -1,38 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import com.fasterxml.jackson.annotation.JsonIgnore;
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.*;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Reservation {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Reservation() {
+-    }
+-
+-    public Reservation(Passenger passenger, Place place, FlightLeg flightLeg) {
+-        this.passenger = passenger;
+-        this.place = place;
+-        this.flightLeg = flightLeg;
+-    }
+-
+-    @ManyToOne
+-    @JoinColumn(name = "pnr_id")
+-    private Passenger passenger;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "place_id")
+-    private Place place;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "flightLeg_id")
+-    @JsonIgnore
+-    private FlightLeg flightLeg;
+-}
+Index: src/main/java/com/justyna/project/model/relational/Airplane.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Airplane.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Airplane.java	(revision )
+@@ -1,39 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+-import com.fasterxml.jackson.annotation.JsonIdentityReference;
+-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.*;
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Airplane {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Airplane() {
+-    }
+-
+-    public Airplane(String code, int capacity) {
+-        this.code = code;
+-        this.capacity = capacity;
+-    }
+-
+-    private String code;
+-    private int capacity;
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "airplane", cascade = CascadeType.ALL)
+-    List<Place> places = new ArrayList<>();
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "airplane", cascade = CascadeType.ALL)
+-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+-    @JsonIdentityReference(alwaysAsId = true)
+-    List<FlightLeg> flightLegs = new ArrayList<>();
+-}
+Index: src/main/java/com/justyna/project/model/relational/Place.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Place.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Place.java	(revision )
+@@ -1,45 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import com.fasterxml.jackson.annotation.JsonIgnore;
+-import com.justyna.project.model.other.CabinClass;
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.*;
+-import java.util.List;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Place {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Place() {
+-    }
+-
+-    public Place(String code) {
+-        this.code = code;
+-    }
+-
+-    private String code;
+-
+-    @Enumerated(EnumType.STRING)
+-    private CabinClass cabinClass;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "airplane_id")
+-    @JsonIgnore
+-    private Airplane airplane;
+-
+-//    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+-//    @JsonIdentityReference(alwaysAsId = true)
+-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "place", cascade = CascadeType.ALL)
+-//    private Set<Passenger> passengers;
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "place", cascade = CascadeType.ALL)
+-    @JsonIgnore
+-    private List<Reservation> flightLegDetails;
+-
+-}
+Index: src/main/java/com/justyna/project/model/relational/Passenger.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Passenger.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Passenger.java	(revision )
+@@ -1,42 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import com.fasterxml.jackson.annotation.JsonIgnore;
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.*;
+-import java.util.List;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Passenger {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Passenger() {
+-    }
+-
+-    private String name;
+-    private String surname;
+-
+-//    @OneToOne(fetch = FetchType.LAZY)
+-//    @JoinColumn(name = "address_id")
+-//    private Address address;
+-
+-    private String pesel;
+-    private String telephone;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "pnr_id")
+-    private Pnr pnr;
+-
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
+-    @JsonIgnore
+-    private List<Reservation> flightLegDetails;
+-
+-//    @ManyToOne
+-//    @JoinColumn(name = "place_id")
+-//    private Place place;
+-}
+Index: src/main/java/com/justyna/project/model/relational/Address.java
+===================================================================
+--- src/main/java/com/justyna/project/model/relational/Address.java	(revision )
++++ src/main/java/com/justyna/project/model/relational/Address.java	(revision )
+@@ -1,28 +0,0 @@
+-package com.justyna.project.model.relational;
+-
+-import lombok.Getter;
+-import lombok.Setter;
+-
+-import javax.persistence.Entity;
+-import javax.persistence.GeneratedValue;
+-import javax.persistence.GenerationType;
+-import javax.persistence.Id;
+-
+-@Getter
+-@Setter
+-@Entity
+-public class Address {
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Long id;
+-
+-    public Address() {
+-    }
+-
+-    private String street;
+-    private String postalCode;
+-    private String country;
+-
+-//    @OneToOne(fetch = FetchType.LAZY, cascade =  CascadeType.ALL, mappedBy = "address")
+-//    private Passenger passenger;
+-}
+Index: src/main/java/com/justyna/project/config/DB_GraphConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/config/DB_GraphConfig.java	(revision )
++++ src/main/java/com/justyna/project/config/DB_GraphConfig.java	(revision )
+@@ -32,8 +32,10 @@
+     public org.neo4j.ogm.config.Configuration configuration() {
+         System.out.println("weszlo to dziadostwo");
+         return new org.neo4j.ogm.config.Configuration.Builder()
+-                .uri("bolt://localhost:7687")
++                .uri("bolt://localhost")
+                 .credentials("neo4j", "secret")
++//                .encryptionLevel("REQUIRED")
++                //.uri("file:///var/tmp/neo4j.db")
+                 .build();
+     }
+ 
+Index: src/main/java/com/justyna/project/controllers/FlightController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/controllers/FlightController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/FlightController.java	(revision )
+@@ -3,44 +3,30 @@
+ import com.justyna.project.model.relational.Airport;
+ import com.justyna.project.model.relational.City;
+ import com.justyna.project.model.relational.Flight;
+-import com.justyna.project.model.relational.FlightLeg;
+ import com.justyna.project.repositories.relational.AirportRelRepository;
+ import com.justyna.project.repositories.relational.CityRelRepository;
+-import com.justyna.project.repositories.relational.FlightLegRelRepository;
+-import com.justyna.project.repositories.relational.FlightRepository;
+ import com.justyna.project.services.FlightsService;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.*;
+ 
+-import java.util.HashSet;
+ import java.util.List;
+ import java.util.Optional;
+-import java.util.Set;
+ 
+ @RestController
+ @RequestMapping("/api/flights")
+ public class FlightController {
+ 
+     private final FlightsService flightsService;
+-    private final FlightRepository flightRepository;
+-    private final FlightLegRelRepository flightLegRelRepository;
+     private final AirportRelRepository airportRelRepository;
+     private final CityRelRepository cityRelRepository;
+ 
+-    public FlightController(FlightsService flightsService, FlightRepository flightRepository, FlightLegRelRepository flightLegRelRepository, AirportRelRepository airportRelRepository, CityRelRepository cityRelRepository) {
++    public FlightController(FlightsService flightsService, AirportRelRepository airportRelRepository, CityRelRepository cityRelRepository) {
+         this.flightsService = flightsService;
+-        this.flightRepository = flightRepository;
+-        this.flightLegRelRepository = flightLegRelRepository;
+         this.airportRelRepository = airportRelRepository;
+         this.cityRelRepository = cityRelRepository;
+     }
+ 
+-    @RequestMapping(method = RequestMethod.GET)
+-    public Iterable<Flight> getAllFlights() {
+-        return flightRepository.findAll();
+-    }
+-
+     @RequestMapping(path = "/search2/departureId={departureAirportId},arrivalId={arrivalAirportId}", method = RequestMethod.GET)
+     public ResponseEntity<List<Flight>> search2(@PathVariable Long departureAirportId, @PathVariable Long arrivalAirportId) {
+         Optional<Airport> departure = airportRelRepository.findById(departureAirportId);
+@@ -58,20 +44,8 @@
+         Optional<City> departure = cityRelRepository.findById(departureCitytId);
+         Optional<City> arrival = cityRelRepository.findById(arrivalCityId);
+         if (departure.isPresent() && arrival.isPresent()) {
+-            List<Flight> flights = flightsService.getOptimalFlightsByCities(departure.get(), arrival.get());
+-            flightRepository.saveAll(flights);
+-            Set<FlightLeg> flightLegs = new HashSet<>();
+-
+-            flights.forEach((flight -> {
+-                for (FlightLeg flightLeg : flight.getFlightLegs()) {
+-                    flightLeg.getFlights().add(flight);
+-                    flightLegs.add(flightLeg);
+-                }
+-            }));
+-
+-            flightLegRelRepository.saveAll(flightLegs);
+-
+-            return new ResponseEntity<>(flights, HttpStatus.OK);
++            return new ResponseEntity<>(
++                    flightsService.getOptimalFlightsByCities(departure.get(), arrival.get()), HttpStatus.OK);
+         }
+         return new ResponseEntity<>((List<Flight>) null, HttpStatus.BAD_REQUEST);
+     }
+Index: src/main/java/com/justyna/project/controllers/FlightLegController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/controllers/FlightLegController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/FlightLegController.java	(revision )
+@@ -46,7 +46,6 @@
+         if (airportRelRepository.findById(departure.getId()).isPresent()) flightLeg.setArrivalAirport(arrival);
+         flightLeg.setDepartureTime(flightLegDto.getDepartureTime(), flightLegDto.getTimeMode());
+         flightLeg.setArrivalTime(flightLegDto.getArrivalTime(), flightLegDto.getTimeMode());
+-        flightLeg.setAirplane(flightLegDto.getAirplane());
+ 
+         return new ResponseEntity<>(flightLegRelRepository.save(flightLeg), HttpStatus.OK);
+     }
+@@ -82,10 +81,6 @@
+             flightLeg.setArrivalTime(flightLegDto.getArrivalTime(), flightLegDto.getTimeMode());
+         }
+ 
+-        if (flightLegDto.getAirplane() != null) {
+-            flightLeg.setAirplane(flightLegDto.getAirplane());
+-        }
+-
+         return new ResponseEntity<>(flightLegRelRepository.save(flightLeg), HttpStatus.OK);
+     }
+ }
+Index: src/main/java/com/justyna/project/controllers/ReservationController.java
+===================================================================
+--- src/main/java/com/justyna/project/controllers/ReservationController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/ReservationController.java	(revision )
+@@ -1,55 +0,0 @@
+-package com.justyna.project.controllers;
+-
+-import com.justyna.project.model.other.PassengerDetail;
+-import com.justyna.project.model.relational.Passenger;
+-import com.justyna.project.model.relational.Place;
+-import com.justyna.project.model.relational.Reservation;
+-import com.justyna.project.repositories.relational.FlightLegRelRepository;
+-import com.justyna.project.repositories.relational.PassengerRepository;
+-import com.justyna.project.repositories.relational.PlaceRepository;
+-import com.justyna.project.repositories.relational.ReservationRepository;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.*;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-@RestController
+-@RequestMapping("/api/reservation")
+-public class ReservationController {
+-
+-    private final PassengerRepository passengerRepository;
+-    private final FlightLegRelRepository flightLegRelRepository;
+-    private final PlaceRepository placeRepository;
+-    private final ReservationRepository reservationRepository;
+-
+-    public ReservationController(PassengerRepository passengerRepository, FlightLegRelRepository flightLegRelRepository,
+-                                 PlaceRepository placeRepository, ReservationRepository reservationRepository) {
+-        this.passengerRepository = passengerRepository;
+-        this.flightLegRelRepository = flightLegRelRepository;
+-        this.placeRepository = placeRepository;
+-        this.reservationRepository = reservationRepository;
+-    }
+-
+-    @CrossOrigin
+-    @RequestMapping(value = "/{flightLegId}", method = RequestMethod.POST)
+-    public ResponseEntity<Iterable<Reservation>> addReservation(@PathVariable Long flightLegId, @RequestBody List<PassengerDetail> passengerDetails) {
+-        List<Reservation> flightLegDetailsList = new ArrayList<>();
+-        for (PassengerDetail passengerDetail : passengerDetails) {
+-            Passenger passenger = passengerDetail.getPassenger();
+-            passengerRepository.save(passenger);
+-            flightLegDetailsList.add(new Reservation(passenger, placeRepository.findById(passengerDetail.getPlaceId()).get(),
+-                    flightLegRelRepository.findById(flightLegId).get()));
+-        }
+-
+-        return new ResponseEntity<>(reservationRepository.saveAll(flightLegDetailsList), HttpStatus.OK);
+-    }
+-
+-    @CrossOrigin
+-    @RequestMapping(value = "places/{flightLegId}", method = RequestMethod.GET)
+-    public ResponseEntity<Iterable<Place>> getPlacesOnSpecificFlightLeg(@PathVariable Long flightLegId) {
+-        List<Place> places = reservationRepository.findPlacesByFlightLegId(flightLegId);
+-        return new ResponseEntity<>(places, HttpStatus.OK);
+-    }
+-}
+Index: src/main/java/com/justyna/project/controllers/PlaceController.java
+===================================================================
+--- src/main/java/com/justyna/project/controllers/PlaceController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/PlaceController.java	(revision )
+@@ -1,60 +0,0 @@
+-package com.justyna.project.controllers;
+-
+-import com.justyna.project.model.relational.Place;
+-import com.justyna.project.repositories.relational.PlaceRepository;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.*;
+-
+-import java.util.Optional;
+-
+-@RestController
+-@RequestMapping("/api/places")
+-public class PlaceController {
+-
+-    private final PlaceRepository placeRepository;
+-
+-    public PlaceController(PlaceRepository placeRepository) {
+-        this.placeRepository = placeRepository;
+-    }
+-
+-    @RequestMapping(method = RequestMethod.GET)
+-    public Iterable<Place> getAllPlaces() {
+-        return placeRepository.findAll();
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+-    public ResponseEntity<Place> getPlaceById(@PathVariable Long id) {
+-        Optional<Place> place = placeRepository.findById(id);
+-        return place.map(place1 -> new ResponseEntity<>(place1, HttpStatus.OK)).orElseGet(
+-                () -> new ResponseEntity<>((Place) null, HttpStatus.BAD_REQUEST));
+-    }
+-
+-    @RequestMapping(method = RequestMethod.POST)
+-    public ResponseEntity<Place> addPlace(@RequestBody Place place) {
+-        return new ResponseEntity<>(placeRepository.save(place), HttpStatus.OK);
+-    }
+-
+-    @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
+-    public ResponseEntity<Place> updatePlace(@RequestBody Place place, @PathVariable Long id) {
+-
+-        return placeRepository.findById(id)
+-                .map(place1 -> {
+-                    place1.setCode(place.getCode());
+-                    place1.setCabinClass(place.getCabinClass());
+-                    if (place.getAirplane() != null & placeRepository.findById(place.getAirplane().getId()).isPresent())
+-                        place1.setAirplane(place.getAirplane());
+-                    return new ResponseEntity<>(placeRepository.save(place1), HttpStatus.OK);
+-                })
+-                .orElseGet(() -> {
+-                    place.setId(id);
+-                    return new ResponseEntity<>(placeRepository.save(place), HttpStatus.OK);
+-                });
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+-    public ResponseEntity<Void> deletePlace(@PathVariable long id) {
+-        placeRepository.deleteById(id);
+-        return new ResponseEntity<>(HttpStatus.OK);
+-    }
+-}
+Index: src/main/java/com/justyna/project/controllers/PnrController.java
+===================================================================
+--- src/main/java/com/justyna/project/controllers/PnrController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/PnrController.java	(revision )
+@@ -1,45 +0,0 @@
+-package com.justyna.project.controllers;
+-
+-import com.justyna.project.model.relational.Pnr;
+-import com.justyna.project.repositories.relational.PnrRepository;
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.*;
+-
+-import java.util.Optional;
+-
+-@RestController
+-@RequestMapping("/api/pnrs")
+-public class PnrController {
+-
+-    private final PnrRepository pnrRepository;
+-
+-    @Autowired
+-    public PnrController(PnrRepository pnrRepository) {
+-        this.pnrRepository = pnrRepository;
+-    }
+-
+-    @RequestMapping(method = RequestMethod.GET)
+-    public Iterable<Pnr> getAllPnrs() {
+-        return pnrRepository.findAll();
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+-    public ResponseEntity<Pnr> getPnrById(@PathVariable Long id) {
+-        Optional<Pnr> pnr = pnrRepository.findById(id);
+-        return pnr.map(pnr1 -> new ResponseEntity<>(pnr1, HttpStatus.OK)).orElseGet(
+-                () -> new ResponseEntity<>((Pnr) null, HttpStatus.BAD_REQUEST));
+-    }
+-
+-    @RequestMapping(method = RequestMethod.POST)
+-    public ResponseEntity<Pnr> addPnr(@RequestBody Pnr pnr) {
+-        return new ResponseEntity<>(pnrRepository.save(pnr), HttpStatus.OK);
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+-    public ResponseEntity<Void> deletePnr(@PathVariable long id) {
+-        pnrRepository.deleteById(id);
+-        return new ResponseEntity<>(HttpStatus.OK);
+-    }
+-}
+Index: src/main/java/com/justyna/project/controllers/PassengerController.java
+===================================================================
+--- src/main/java/com/justyna/project/controllers/PassengerController.java	(revision )
++++ src/main/java/com/justyna/project/controllers/PassengerController.java	(revision )
+@@ -1,67 +0,0 @@
+-package com.justyna.project.controllers;
+-
+-import com.justyna.project.model.relational.Passenger;
+-import com.justyna.project.repositories.relational.AddressRepository;
+-import com.justyna.project.repositories.relational.PassengerRepository;
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.*;
+-
+-import java.util.Optional;
+-
+-@RestController
+-@RequestMapping("/api/passengers")
+-public class PassengerController {
+-
+-    private final PassengerRepository passengerRepository;
+-    private final AddressRepository addressRepository;
+-
+-    @Autowired
+-    public PassengerController(PassengerRepository passengerRepository, AddressRepository addressRepository) {
+-        this.passengerRepository = passengerRepository;
+-        this.addressRepository = addressRepository;
+-    }
+-
+-    @RequestMapping(method = RequestMethod.GET)
+-    public Iterable<Passenger> getAllPassengers() {
+-        return passengerRepository.findAll();
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+-    public ResponseEntity<Passenger> getPassengerById(@PathVariable Long id) {
+-        Optional<Passenger> passenger = passengerRepository.findById(id);
+-        return passenger.map(passenger1 -> new ResponseEntity<>(passenger1, HttpStatus.OK)).orElseGet(
+-                () -> new ResponseEntity<>((Passenger) null, HttpStatus.BAD_REQUEST));
+-    }
+-
+-    @RequestMapping(method = RequestMethod.POST)
+-    public ResponseEntity<Passenger> addPassenger(@RequestBody Passenger passenger) {
+-        return new ResponseEntity<>(passengerRepository.save(passenger), HttpStatus.OK);
+-    }
+-
+-    @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
+-    public ResponseEntity<Passenger> updatePassenger(@RequestBody Passenger passenger, @PathVariable Long id) {
+-
+-        return passengerRepository.findById(id)
+-                .map(passenger1 -> {
+-                    passenger1.setName(passenger.getName());
+-                    passenger1.setSurname(passenger.getSurname());
+-                    passenger1.setPesel(passenger.getPesel());
+-                    passenger1.setTelephone(passenger.getTelephone());
+-//                    if (passenger.getAddress() != null & addressRepository.findById(passenger.getAddress().getId()).isPresent())
+-//                        passenger1.setAddress(passenger.getAddress());
+-                    return new ResponseEntity<>(passengerRepository.save(passenger1), HttpStatus.OK);
+-                })
+-                .orElseGet(() -> {
+-                    passenger.setId(id);
+-                    return new ResponseEntity<>(passengerRepository.save(passenger), HttpStatus.OK);
+-                });
+-    }
+-
+-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+-    public ResponseEntity<Void> deletePassenger(@PathVariable long id) {
+-        passengerRepository.deleteById(id);
+-        return new ResponseEntity<>(HttpStatus.OK);
+-    }
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/FlightLegRelRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/FlightLegRelRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/FlightLegRelRepository.java	(revision )
+@@ -4,10 +4,7 @@
+ import org.springframework.data.repository.CrudRepository;
+ import org.springframework.web.bind.annotation.CrossOrigin;
+ 
+-import java.util.Optional;
+-
+ @CrossOrigin
+ public interface FlightLegRelRepository extends CrudRepository<FlightLeg, Long> {
+-    @Override
+-    Optional<FlightLeg> findById(Long aLong);
++
+ }
+Index: src/main/java/com/justyna/project/repositories/relational/FlightRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/FlightRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/FlightRepository.java	(revision )
+@@ -1,7 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Flight;
+-import org.springframework.data.repository.CrudRepository;
+-
+-public interface FlightRepository extends CrudRepository<Flight, Long> {
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/ReservationRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/ReservationRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/ReservationRepository.java	(revision )
+@@ -1,16 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Place;
+-import com.justyna.project.model.relational.Reservation;
+-import org.springframework.data.jpa.repository.Query;
+-import org.springframework.data.repository.CrudRepository;
+-import org.springframework.web.bind.annotation.CrossOrigin;
+-
+-import java.util.List;
+-
+-@CrossOrigin
+-public interface ReservationRepository extends CrudRepository<Reservation, Long> {
+-
+-    @Query("select r.place from Reservation r where r.flightLeg.id = ?1")
+-    List<Place> findPlacesByFlightLegId(Long flightLeg_id);
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/PnrRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/PnrRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/PnrRepository.java	(revision )
+@@ -1,7 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Pnr;
+-import org.springframework.data.repository.CrudRepository;
+-
+-public interface PnrRepository extends CrudRepository<Pnr, Long> {
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/PassengerRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/PassengerRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/PassengerRepository.java	(revision )
+@@ -1,7 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Passenger;
+-import org.springframework.data.repository.CrudRepository;
+-
+-public interface PassengerRepository  extends CrudRepository<Passenger, Long> {
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/PlaceRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/PlaceRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/PlaceRepository.java	(revision )
+@@ -1,11 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Place;
+-import org.springframework.data.repository.CrudRepository;
+-
+-import java.util.Optional;
+-
+-public interface PlaceRepository extends CrudRepository<Place, Long> {
+-    @Override
+-    Optional<Place> findById(Long aLong);
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/AddressRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/AddressRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/AddressRepository.java	(revision )
+@@ -1,7 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Address;
+-import org.springframework.data.repository.CrudRepository;
+-
+-public interface AddressRepository extends CrudRepository<Address, Long> {
+-}
+Index: src/main/java/com/justyna/project/repositories/relational/AirplaneRepository.java
+===================================================================
+--- src/main/java/com/justyna/project/repositories/relational/AirplaneRepository.java	(revision )
++++ src/main/java/com/justyna/project/repositories/relational/AirplaneRepository.java	(revision )
+@@ -1,7 +0,0 @@
+-package com.justyna.project.repositories.relational;
+-
+-import com.justyna.project.model.relational.Airplane;
+-import org.springframework.data.repository.CrudRepository;
+-
+-public interface AirplaneRepository extends CrudRepository<Airplane, Long> {
+-}
+Index: src/main/java/com/justyna/project/ProjectApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/justyna/project/ProjectApplication.java	(revision )
++++ src/main/java/com/justyna/project/ProjectApplication.java	(revision )
+@@ -1,20 +1,23 @@
+ package com.justyna.project;
+ 
+-import com.justyna.project.model.other.CabinClass;
+-import com.justyna.project.model.relational.*;
++import com.justyna.project.model.relational.Airport;
++import com.justyna.project.model.relational.City;
++import com.justyna.project.model.relational.Country;
++import com.justyna.project.model.relational.FlightLeg;
+ import com.justyna.project.repositories.graph.AirportGraphRepository;
+ import com.justyna.project.repositories.graph.FlightGraphRepository;
+-import com.justyna.project.repositories.relational.AirplaneRepository;
+ import com.justyna.project.repositories.relational.CityRelRepository;
+ import com.justyna.project.repositories.relational.CountryRelRepository;
+-import com.justyna.project.repositories.relational.PlaceRepository;
+ import com.justyna.project.services.FlightsService;
+ import org.springframework.boot.CommandLineRunner;
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
+ import org.springframework.context.annotation.Bean;
+ 
+-import java.util.*;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
+ 
+ import static com.justyna.project.model.other.TimeMode.LOCAL;
+ import static com.justyna.project.model.other.TimeMode.UTC;
+@@ -29,33 +32,11 @@
+     @Bean
+     CommandLineRunner demo(AirportGraphRepository airportRepository,
+                            FlightGraphRepository flightGraphRepository,
+-                           PlaceRepository placeRepository,
+-                           AirplaneRepository airplaneRepository,
+                            CityRelRepository cityRepository, FlightsService flightsServices, CountryRelRepository countryRelRepository
+     ) {
+         return args -> {
+             airportRepository.deleteAll();
+             flightGraphRepository.deleteAll();
+-
+-            List<Airplane> airplanes = new ArrayList<>();
+-            for (int i = 0; i < 9; i++) {
+-                airplanes.add(new Airplane("GA", 100));
+-            }
+-            airplaneRepository.saveAll(airplanes);
+-
+-            for (Airplane airplane : airplanes) {
+-                List<Place> placeList = new ArrayList<>();
+-                for (int i = 0; i < airplane.getCapacity(); i++) {
+-                    Place place = new Place(airplane.getCode() + i);
+-                    if (i < airplane.getCapacity() * 0.20) place.setCabinClass(CabinClass.A);
+-                    else place.setCabinClass(CabinClass.B);
+-                    place.setAirplane(airplane);
+-                    placeList.add(place);
+-                }
+-                placeRepository.saveAll(placeList);
+-            }
+-
+-
+             Map<String, City> cityMap = new HashMap<>();
+             Map<String, Country> countryMap = new HashMap<>();
+             countryMap.put("Poland", new Country("Poland"));
+@@ -102,16 +83,16 @@
+ 
+             Set<FlightLeg> flights = new HashSet<>();
+ 
+-            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(0)));
+-            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC, airplanes.get(1)));
++            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
++            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC));
+ //            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
+-            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC, airplanes.get(2)));
+-            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC, airplanes.get(3)));
+-            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC, airplanes.get(4)));
+-            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(5)));
+-            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC, airplanes.get(6)));
+-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC, airplanes.get(7)));
+-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC, airplanes.get(8)));
++            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC));
++            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC));
++            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC));
++            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
++            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC));
++            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC));
++            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC));
+ 
+             Set<Airport> airports = new HashSet<>();
+             airports.add(cracowAirport);
+@@ -121,11 +102,8 @@
+             airports.add(londonCanadaAirport);
+             airports.add(barcelonaAirport);
+ 
+-
+             flightsServices.translateAirports(airports, flights);
+-            System.out.println("Wait for it...");
+-            System.out.println("Compilation is done");
+-            // System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
++            System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
+ 
+         };
+     }
