@@ -33,7 +33,8 @@ public class DB_GraphConfig {
         System.out.println("weszlo to dziadostwo");
         return new org.neo4j.ogm.config.Configuration.Builder()
                 .uri("bolt://localhost:7687")
-                .credentials("neo4j", "secret")
+                .credentials("neo4j", "haslo")
+//                .credentials("", "")
                 .build();
     }
 

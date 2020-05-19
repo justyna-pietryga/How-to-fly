@@ -43,6 +43,7 @@ public class DB_RelationalConfig {
     public LocalContainerEntityManagerFactoryBean relationalDBFactory(@Qualifier("userDS") DataSource userDS, EntityManagerFactoryBuilder builder) {
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", "create-drop");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
         return builder.dataSource(userDS).packages("com.justyna.project.model.relational").properties(properties).build();
     }
 

@@ -4,10 +4,7 @@ import com.justyna.project.model.other.CabinClass;
 import com.justyna.project.model.relational.*;
 import com.justyna.project.repositories.graph.AirportGraphRepository;
 import com.justyna.project.repositories.graph.FlightGraphRepository;
-import com.justyna.project.repositories.relational.AirplaneRepository;
-import com.justyna.project.repositories.relational.CityRelRepository;
-import com.justyna.project.repositories.relational.CountryRelRepository;
-import com.justyna.project.repositories.relational.PlaceRepository;
+import com.justyna.project.repositories.relational.*;
 import com.justyna.project.services.FlightsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,13 +24,15 @@ public class ProjectApplication {
     }
 
     @Bean
-    CommandLineRunner demo(AirportGraphRepository airportRepository,
+    CommandLineRunner demo(RoleRepository roleRepository, AirportGraphRepository airportRepository,
                            FlightGraphRepository flightGraphRepository,
                            PlaceRepository placeRepository,
                            AirplaneRepository airplaneRepository,
                            CityRelRepository cityRepository, FlightsService flightsServices, CountryRelRepository countryRelRepository
     ) {
         return args -> {
+            roleRepository.save(new Role("USER"));
+            roleRepository.save(new Role("ADMIN"));
             airportRepository.deleteAll();
             flightGraphRepository.deleteAll();
 
@@ -42,6 +41,7 @@ public class ProjectApplication {
                 airplanes.add(new Airplane("GA", 100));
             }
             airplaneRepository.saveAll(airplanes);
+            System.out.println("done");
 
             for (Airplane airplane : airplanes) {
                 List<Place> placeList = new ArrayList<>();
@@ -102,16 +102,16 @@ public class ProjectApplication {
 
             Set<FlightLeg> flights = new HashSet<>();
 
-            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(0)));
-            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T06:10", "2018-09-02T07:30", UTC, airplanes.get(1)));
-//            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-            flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T08:00", "2018-09-02T12:40", UTC, airplanes.get(2)));
-            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T09:00", "2018-09-02T17:20", UTC, airplanes.get(3)));
-            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T04:30", "2018-09-02T05:50", UTC, airplanes.get(4)));
-            flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL, airplanes.get(5)));
-            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T22:00", UTC, airplanes.get(6)));
-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:00", "2018-09-03T00:00", UTC, airplanes.get(7)));
-            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T22:30", "2018-09-02T23:30", UTC, airplanes.get(8)));
+            flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2020-05-19T22:00", "2020-05-19T22:00", LOCAL, airplanes.get(0), 5000, 0.1));
+            flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2020-05-19T06:10", "2020-05-19T07:30", UTC, airplanes.get(1), 1000, 0.1));
+//            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2020-09-02T22:00", "2020-09-02T22:00"));
+            flights.add(new FlightLeg(londonAirport, moscowAirport, "2020-05-19T08:00", "2020-05-19T12:40", UTC, airplanes.get(2), 1200, 0.2));
+            flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2020-05-19T09:00", "2020-05-19T17:20", UTC, airplanes.get(3), 3000, 0.05));
+            flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2020-05-19T04:30", "2020-05-19T05:50", UTC, airplanes.get(4), 500, 0.07));
+            flights.add(new FlightLeg(cracowAirport, londonAirport, "2020-05-19T22:00", "2020-05-19T22:00", LOCAL, airplanes.get(5), 600, 0.05));
+            flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2020-05-19T13:00", "2020-05-19T22:00", UTC, airplanes.get(6), 6000, 0.1));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2020-05-19T23:00", "2020-05-20T00:00", UTC, airplanes.get(7), 200, 0.1));
+            flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2020-05-19T22:30", "2020-05-19T23:30", UTC, airplanes.get(8), 200, 0.1));
 
             Set<Airport> airports = new HashSet<>();
             airports.add(cracowAirport);
@@ -121,12 +121,12 @@ public class ProjectApplication {
             airports.add(londonCanadaAirport);
             airports.add(barcelonaAirport);
 
-
+            System.out.println("Wait...");
             flightsServices.translateAirports(airports, flights);
             System.out.println("Wait for it...");
             System.out.println("Compilation is done");
-//            flightsServices.getOptimalFlightsByCitiesAndDates(londonAirport, londonCanadaAirport, "2018-09-02T08:00Z", "2018-09-02T23:30Z", UTC);
-//            flightsServices.getOptimalFlightsByCitiesAndDates(cracowAirport, chicagoAirport, "2018-09-02T22:00Z", "2018-09-02T22:00Z", LOCAL);
+//            flightsServices.getOptimalFlightsByCitiesAndDates(londonAirport, londonCanadaAirport, "2020-09-02T08:00Z", "2020-09-02T23:30Z", UTC);
+//            flightsServices.getOptimalFlightsByCitiesAndDates(cracowAirport, chicagoAirport, "2020-09-02T22:00Z", "2020-09-02T22:00Z", LOCAL);
 //            System.out.println("result " + flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
             // System.out.println(flightsServices.getOptimalFlightsByAirports(londonAirport, londonCanadaAirport));
 
@@ -135,12 +135,12 @@ public class ProjectApplication {
 }
 
 
-//flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
-//        flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2018-09-02T07:10", "2018-09-02T08:30", UTC));
-////            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2018-09-02T22:00", "2018-09-02T22:00"));
-//        flights.add(new FlightLeg(londonAirport, moscowAirport, "2018-09-02T09:00", "2018-09-02T16:40", LOCAL));
-//        flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2018-09-02T13:00", "2018-09-02T23:30", UTC));
-//        flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2018-09-02T05:20", "2018-09-02T06:30", UTC));
-//        flights.add(new FlightLeg(cracowAirport, londonAirport, "2018-09-02T22:00", "2018-09-02T22:00", LOCAL));
-//        flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2018-09-02T14:10", "2018-09-02T23:10", UTC));
-//        flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2018-09-02T23:40", "2018-09-02T00:40", UTC));
+//flights.add(new FlightLeg(cracowAirport, chicagoAirport, "2020-09-02T22:00", "2020-09-02T22:00", LOCAL));
+//        flights.add(new FlightLeg(barcelonaAirport, londonAirport, "2020-09-02T07:10", "2020-09-02T08:30", UTC));
+////            flights.add(new Flight(londonCanadaAirport, chicagoAirport, "2020-09-02T22:00", "2020-09-02T22:00"));
+//        flights.add(new FlightLeg(londonAirport, moscowAirport, "2020-09-02T09:00", "2020-09-02T16:40", LOCAL));
+//        flights.add(new FlightLeg(barcelonaAirport, chicagoAirport, "2020-09-02T13:00", "2020-09-02T23:30", UTC));
+//        flights.add(new FlightLeg(londonAirport, barcelonaAirport, "2020-09-02T05:20", "2020-09-02T06:30", UTC));
+//        flights.add(new FlightLeg(cracowAirport, londonAirport, "2020-09-02T22:00", "2020-09-02T22:00", LOCAL));
+//        flights.add(new FlightLeg(moscowAirport, chicagoAirport, "2020-09-02T14:10", "2020-09-02T23:10", UTC));
+//        flights.add(new FlightLeg(chicagoAirport, londonCanadaAirport, "2020-09-02T23:40", "2020-09-02T00:40", UTC));

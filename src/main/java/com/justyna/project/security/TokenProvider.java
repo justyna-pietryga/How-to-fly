@@ -1,7 +1,5 @@
 package com.justyna.project.security;
 
-//import com.devglan.model.User;
-
 import io.jsonwebtoken.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

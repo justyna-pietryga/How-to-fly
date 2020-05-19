@@ -24,7 +24,7 @@
 		<java.version>1.8</java.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<geotools.version>21-SNAPSHOT</geotools.version>
+		<geotools.version>24-SNAPSHOT</geotools.version>
 	</properties>
 
 	<dependencies>
@@ -59,6 +59,12 @@
 			<version>${neo4j-ogm.version}</version>
 		</dependency>
 
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-http-driver</artifactId>
+            <version>${neo4j-ogm.version}</version>
+        </dependency>
+
 		<!--MySQl and JPA-->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -83,6 +89,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.46</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -144,16 +151,17 @@
 	<repositories>
 		<repository>
 			<id>osgeo</id>
-			<name>Open Source Geospatial Foundation Repository</name>
-			<url>http://download.osgeo.org/webdav/geotools/</url>
+			<name>OSGeo Release Repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<snapshots><enabled>false</enabled></snapshots>
+			<releases><enabled>true</enabled></releases>
 		</repository>
 		<repository>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>boundless</id>
-			<name>Boundless Maven Repository</name>
-			<url>http://repo.boundlessgeo.com/main</url>
+			<id>osgeo-snapshot</id>
+			<name>OSGeo Snapshot Repository</name>
+			<url>https://repo.osgeo.org/repository/snapshot/</url>
+			<snapshots><enabled>true</enabled></snapshots>
+			<releases><enabled>false</enabled></releases>
 		</repository>
 	</repositories>
 
@@ -162,6 +170,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.0.4.RELEASE</version>
 			</plugin>
 		</plugins>
 	</build>

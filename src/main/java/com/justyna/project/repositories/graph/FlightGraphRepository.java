@@ -1,11 +1,14 @@
 package com.justyna.project.repositories.graph;
 
+import com.justyna.project.model.graph.Airport;
 import com.justyna.project.model.graph.Flight;
 import org.neo4j.driver.internal.InternalPath;
+import org.neo4j.driver.v1.types.Path;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Iterator;
 import java.util.Map;
 
 public interface FlightGraphRepository extends Neo4jRepository<Flight, Long> {

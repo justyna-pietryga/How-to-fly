@@ -70,6 +70,9 @@ public class FlightLeg {
     @JoinColumn(name = "airplane_id")
     private Airplane airplane;
 
+    private double prize;
+    private double discount;
+
     public FlightLeg(Long id, Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane) {
         this.id = id;
         this.departureAirport = departureAirport;
@@ -88,6 +91,19 @@ public class FlightLeg {
         DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm");
         this.deptTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(departureTime, timeMode, departureAirport.getTimeZone())).getMillis());
         this.arrivalTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(arrivalTime, timeMode, departureAirport.getTimeZone())).getMillis());
+    }
+
+    public FlightLeg(Airport departureAirport, Airport arrivalAirport, String departureTime, String arrivalTime, TimeMode timeMode, Airplane airplane, double prize, double discount) throws ParseException {
+        this.departureAirport = departureAirport;
+        this.arrivalAirport = arrivalAirport;
+        this.airplane = airplane;
+        setDepartureTime(departureTime, timeMode);
+        setArrivalTime(arrivalTime, timeMode);
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm");
+        this.deptTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(departureTime, timeMode, departureAirport.getTimeZone())).getMillis());
+        this.arrivalTimeDate = new Timestamp(format.parseDateTime(convertTimeFormatter(arrivalTime, timeMode, departureAirport.getTimeZone())).getMillis());
+        this.prize = prize;
+        this.discount = discount;
     }
 
     public void setDepartureTime(String localeTime, TimeMode timeMode) {
@@ -129,6 +145,10 @@ public class FlightLeg {
         } else return time;
 
         return timeUTC.substring(0, timeUTC.length() - 1);
+    }
+
+    public double getPriceForAllPassengers(int passengersCount, int childrenPassengers) {
+        return passengersCount * prize - childrenPassengers * prize * discount;
     }
 
     @Override

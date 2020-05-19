@@ -10,6 +10,7 @@ import com.justyna.project.repositories.graph.FlightGraphRepository;
 import com.justyna.project.repositories.relational.AirportRelRepository;
 import com.justyna.project.repositories.relational.FlightLegRelRepository;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.justyna.project.model.other.TimeMode.UTC;
 
@@ -81,7 +83,8 @@ public class FlightsService {
     public List<Flight> getOptimalFlightsByCities(City departCity, City arrivalCity) {
         List<Flight> flights = new ArrayList<>();
         departCity.getAirport().forEach(airportD ->
-                arrivalCity.getAirport().forEach(airportA -> flights.addAll(getOptimalFlightsByAirports(airportD, airportA))));
+                arrivalCity.getAirport().forEach(airportA ->
+                        flights.addAll(getOptimalFlightsByAirports(airportD, airportA))));
         return flights;
     }
 
@@ -98,10 +101,31 @@ public class FlightsService {
         return flights;
     }
 
+    public List<Flight> getOptimalFlightsByCriteria(City departCity, City arrivalCity,
+                                                    String departDate, String arrivalDate,
+                                                    TimeMode timeMode, double priceMin, double priceMax, int amountOfPassengers, int child) {
+        List<Flight> flights = getOptimalFlightsByCitiesAndDates(departCity, arrivalCity, departDate, arrivalDate, timeMode);
+        val result = flights.stream().filter(flight -> {
+            double price = flight.getPriceForAllPassengers(amountOfPassengers, child);
+            System.out.println("price: " + price);
+            System.out.println("priceMin: " + priceMin);
+            System.out.println("priceMax: " + priceMax);
+            System.out.println("is: " + (price > priceMin && price < priceMax));
+            logger.info(String.valueOf(price));
+            return price > priceMin && price < priceMax;
+        }).collect(Collectors.toList());
+
+        System.out.println("ostatecznie: " + result);
+
+        return result;
+    }
+
     public List<Flight> getOptimalFlightsByAirportsAndDates(Airport departAirport, Airport arrivalAirport,
                                                             String departDate, String arrivalDate, TimeMode timeMode) {
-        return algorithmSearcherService.getFlights(
+        val result = algorithmSearcherService.getFlights(
                 getFlightsWithDatesFromDB(departAirport, arrivalAirport, departDate, arrivalDate, timeMode));
+        System.out.println("result2: " + result);
+        return result;
     }
 
     private List<Flight> getFlightsFromDB(Airport departAirport, Airport arrivalAirport) {

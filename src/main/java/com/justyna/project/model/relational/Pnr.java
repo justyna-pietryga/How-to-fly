@@ -22,13 +22,28 @@ public class Pnr {
     }
 
     private String code;
+    private double price;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", cascade = CascadeType.ALL)
     private List<Passenger> passengers;
 
-    @ManyToOne
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
+    @Override
+    public String toString() {
+        return "Pnr{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", passengers=" + passengers +
+                '}';
+    }
+
+    //
+//    @ManyToOne
+//    @JoinColumn(name = "flight_id")
+//    private Flight flight;
 
     //ToDo pnr i pasenger code, generated chars
 }

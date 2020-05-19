@@ -1,6 +1,5 @@
 package com.justyna.project.model.relational;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +23,7 @@ public class Reservation {
     }
 
     @ManyToOne
-    @JoinColumn(name = "pnr_id")
+    @JoinColumn(name = "passenger_id")
     private Passenger passenger;
 
     @ManyToOne
@@ -33,6 +32,5 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "flightLeg_id")
-    @JsonIgnore
     private FlightLeg flightLeg;
 }

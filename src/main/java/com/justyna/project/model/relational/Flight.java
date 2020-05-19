@@ -1,8 +1,5 @@
 package com.justyna.project.model.relational;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +15,8 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private double price;
+
     public Flight() {
     }
 
@@ -25,10 +24,14 @@ public class Flight {
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "flights")
     private List<FlightLeg> flightLegs = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "flight", cascade = CascadeType.ALL)
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-    @JsonIdentityReference(alwaysAsId = true)
-    private List<Pnr> pnrs = new ArrayList<>();
+    public double getPriceForAllPassengers(int passengersCount, int children) {
+        return this.flightLegs.stream().mapToDouble(flightLeg -> flightLeg.getPriceForAllPassengers(passengersCount, children)).sum();
+    }
+
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "flight", cascade = CascadeType.ALL)
+//    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+//    @JsonIdentityReference(alwaysAsId = true)
+//    private List<Pnr> pnrs = new ArrayList<>();
 
     @Override
     public String toString() {

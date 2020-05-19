@@ -82,7 +82,9 @@ public class FlightController {
     @CrossOrigin
     @RequestMapping(path = "/search3/departureId={departureCitytId},arrivalId={arrivalCityId}", method = RequestMethod.GET)
     public ResponseEntity<List<Flight>> search3(@PathVariable Long departureCitytId, @PathVariable Long arrivalCityId,
-                                                @RequestParam String departDate, @RequestParam String arrivalDate, @RequestParam String timeMode)
+                                                @RequestParam String departDate, @RequestParam String arrivalDate, @RequestParam String timeMode,
+                                                @RequestParam int amountOfPassengers, @RequestParam int child,
+                                                @RequestParam int priceMin, @RequestParam int priceMax)
             throws WrongTimeModeException, IllegalArgumentException {
         Optional<City> departure = cityRelRepository.findById(departureCitytId);
         Optional<City> arrival = cityRelRepository.findById(arrivalCityId);
@@ -90,11 +92,16 @@ public class FlightController {
             try {
                 TimeMode timeMode1 = TimeMode.convert(timeMode);
 
-                List<Flight> flights = flightsService.getOptimalFlightsByCitiesAndDates(departure.get(), arrival.get(), departDate, arrivalDate, timeMode1);
+//                List<Flight> flights = flightsService.getOptimalFlightsByCitiesAndDates(departure.get(), arrival.get(), departDate, arrivalDate, timeMode1);
+                List<Flight> flights = flightsService.getOptimalFlightsByCriteria(departure.get(), arrival.get(),
+                        departDate, arrivalDate, timeMode1, (double) priceMin, (double) priceMax, amountOfPassengers, child);
+
+                System.out.println("ready: " + flights);
                 flightRepository.saveAll(flights);
                 Set<FlightLeg> flightLegs = new HashSet<>();
 
                 flights.forEach((flight -> {
+                    flight.setPrice(flight.getPriceForAllPassengers(amountOfPassengers, child));
                     for (FlightLeg flightLeg : flight.getFlightLegs()) {
                         flightLeg.getFlights().add(flight);
                         flightLegs.add(flightLeg);

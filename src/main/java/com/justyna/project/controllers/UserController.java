@@ -5,6 +5,7 @@ import com.justyna.project.security.model.UserDto;
 import com.justyna.project.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,9 +31,10 @@ public class UserController {
     //@Secured("ROLE_USER")
 //    @PreAuthorize("hasRole('USER')")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @RequestMapping(value = "/users/{id}", method = RequestMethod.GET)
-    public User getOne(@PathVariable(value = "id") Long id) {
-        return userService.findById(id);
+    @RequestMapping(value = "/user", method = RequestMethod.GET)
+    public User getCurrentUser() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userService.findOne(currentUsername);
     }
 
 
